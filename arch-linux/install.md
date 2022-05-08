@@ -7,33 +7,33 @@ My experience comes from installing arch on a laptop (TongFang something or othe
 Last qualifier: These instructions could be very out of date.
 
 ------
-# Forward
-# Partitioning the boot disk
-## EFI Partition
-## Usefule `parted` commands
-## Partitions and their sizes
-## What I would've done differently (also, wtf is the `xbootldr` partition?)
-### How to make a `XBOOTLDR` partition
-### Where to mount your partitions when using an `XBOOTLDR` partition
-### Bootloader setup using `XBOOTLDR`
-# `pacstrap` installation suggestions
-# Setting up wifi
-## Reference Guides
-## What we're setting up
-## setting up `iwd` and `dhcp`
-## setting up `systemd-resolved` and `dns`
-## connecting to wifi after rebooting into your arch installation (`iwctl`)
-## Notes
-# Graphics drivers (nvidia only)
-## Referenced guides
-## Installing the drivers
-## Enabling DRM (Direct Render Mode)
-### Adding kernel flag
-### Early loading DRM modules
-## Things that still haven't been configured
-# Desktop environment
-## Referenced guides
-## xOrg install and configuration
+- [Partitioning the boot disk](#partitioning-the-boot-disk)
+    - [EFI Partition](#efi-partition)
+    - [Usefule `parted` commands](#usefule-parted-commands)
+    - [Partitions and their sizes](#partitions-and-their-sizes)
+    - [What I would've done differently (also, wtf is the `xbootldr` partition?)](#what-i-wouldve-done-differently-also-wtf-is-the-xbootldr-partition)
+        - [How to make a `XBOOTLDR` partition](#how-to-make-a-xbootldr-partition)
+        - [Where to mount your partitions when using an `XBOOTLDR` partition](#where-to-mount-your-partitions-when-using-an-xbootldr-partition)
+        - [Bootloader setup using `XBOOTLDR`](#bootloader-setup-using-xbootldr)
+- [`pacstrap` installation suggestions](#pacstrap-installation-suggestions)
+- [Setting up wifi](#setting-up-wifi)
+    - [Referenced Guides](#referenced-guides)
+    - [What we're setting up](#what-were-setting-up)
+    - [setting up `iwd` and `dhcp`](#setting-up-iwd-and-dhcp)
+    - [setting up `systemd-resolved` and `dns`](#setting-up-systemd-resolved-and-dns)
+    - [connecting to wifi after rebooting into your arch installation (`iwctl`)](#connecting-to-wifi-after-rebooting-into-your-arch-installation-iwctl)
+    - [Notes](#notes)
+- [Graphics drivers (nvidia only)](#graphics-drivers-nvidia-only)
+    - [Referenced guides](#referenced-guides-1)
+    - [Installing the drivers](#installing-the-drivers)
+    - [Enabling DRM (Direct Render Mode)](#enabling-drm-direct-render-mode)
+        - [Adding kernel flag](#adding-kernel-flag)
+        - [Early loading DRM modules](#early-loading-drm-modules)
+    - [Things that still haven't been configured](#things-that-still-havent-been-configured)
+- [Desktop environment](#desktop-environment)
+    - [Referenced guides](#referenced-guides-2)
+    - [xOrg install and configuration](#xorg-install-and-configuration)
+    - [Installing a graphical environment (`xfce4`)](#installing-a-graphical-environment-xfce4)
 
 
 # Partitioning the boot disk
@@ -233,7 +233,7 @@ The following are only for graphics (I would read the graphics driver section ju
 
 # Setting up wifi
 
-## Reference Guides
+## Referenced Guides
 
 Arch has an extremely good wiki, so if in doubt, here are the different articles that I used when setting this up:
 
@@ -440,18 +440,113 @@ Note: Not gonna cover multimonitor
 ## Referenced guides
 
 - [xorg](https://wiki.archlinux.org/title/Xorg)
+- [xinit]()
 - [Nvidia](https://wiki.archlinux.org/title/NVIDIA) - Has a section on configuring xorg settings
+- [xfce4]()
 
 ## xOrg install and configuration
 
-run `pacman -S xorg-server xorg-apps`
+- run `pacman -S xorg-server xorg-apps xorg-xinit`
+- backup your `/etc/x11/xorg.conf` file (maybe copy it somewhere)
+- Add the following to either your `~/.bashrc` or `~/.zshrc`:
 
-backup your `/etc/x11/xorg.conf` file (maybe copy it somewhere)
-
-Add the following to either your `~/.bashrc` or `~/.zshrc`:
 ```
 export DISPLAY=":0.0"
+```
 
-run `nvidia-xconfig` fixing any errors, until it succeeds (may have a few errors, I didn't really pay too much attention at this part)
+- `source` either your `~/.bashrc` or `~/.zshrc` IE: `source ~/.zshrc`
+- run `nvidia-xconfig` and pay attention to any errors it gives
+    - I do remember getting errors here, but I don't remember how I solved them, so google will have to be your friend
+- run `cp /etc/X11/xinit/xinitrc ~/.xinitrc` to get your initial `xinitrc`
+- Add the following to either your `~/.bash_profile` or `~/.zprofile` (you may have to make the file)
 
-There is some more stuff, but I have to stop the guide at the moment, after youre done with this, I suggest installing `xfce4` as it's been pretty nice.
+```
+# If DISPLAY is set and this is the first terminal of the session, then start the graphical interface
+if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
+	exec startx
+fi
+
+```
+
+That should cover getting xorg set up and ready to automatically start a x11 session on login.
+
+## Installing a graphical environment (`xfce4`)
+
+Installing environments is pretty trivial at this point, I'll include what I did for `xfce4`, but it is (for most environments) exactly the same across different desktop environments and boils down to this:
+
+- Download and install the recommended packages for your desktop environment (`arch` wiki is helpful here)
+- Edit your `~/.xinitrc` (see above for where to get it) and comment out/delete the lines at the bottom:
+
+Initial `~/.xinitrc`
+
+```
+# ... random stuff
+
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x "$f" ] && . "$f"
+ done
+ unset f
+fi
+
+twm &
+xclock -geometry 50x50-1+1 &
+xterm -geometry 80x50+494+51 &
+xterm -geometry 80x20+494-0 &
+exec xterm -geometry 80x66+0+0 -name login
+
+```
+
+after editing `~/.xinitrc`
+
+```
+# ... random stuff
+
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x "$f" ] && . "$f"
+ done
+ unset f
+fi
+
+twm &
+# xclock -geometry 50x50-1+1 &
+# xterm -geometry 80x50+494+51 &
+# xterm -geometry 80x20+494-0 &
+# exec xterm -geometry 80x66+0+0 -name login
+
+```
+
+- Add the startup command for your given desktop environment to the bottom of your `~/.xinitrc`
+
+IE: If you were installing `xfce4`, your `~/.xinitrc` would look like this:
+
+```
+# ... random stuff
+
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x "$f" ] && . "$f"
+ done
+ unset f
+fi
+
+twm &
+# xclock -geometry 50x50-1+1 &
+# xterm -geometry 80x50+494+51 &
+# xterm -geometry 80x20+494-0 &
+# exec xterm -geometry 80x66+0+0 -name login
+exec startxfce4
+
+```
+
+- log out and then back in
+- If all went well, you now have a new graphical environment
+- If all did not go well, try running `xinit` manually and googling any errors
+- To change environments, you simply replace the `exec [your current desktop env here]` with `exec [the command given by the arch wiki for your new desktop env]`
