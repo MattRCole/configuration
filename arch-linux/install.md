@@ -8,6 +8,7 @@ Last qualifier: These instructions could be very out of date.
 
 ------
 
+
 # Partitioning the boot disk
 
 I used `parted` because it seemed like a simple option. `parted` will satisfy most needs.
@@ -39,7 +40,7 @@ The following commands can be run inside of a `parted` live session (see previou
     - Note: You really ought to run `resize2fs -M` before making a partition smaller. After you are done resizing the partition (to be bigger or smaller) run `resize2fs` again to fill up the available space
     - Note: In a normal install, this isn't really needed.
 
-## Partitions, and their sizes
+## Partitions and their sizes
 
 I ended up making the following partitions:
 
@@ -64,7 +65,7 @@ Also, I would've ordered my partitions differently if I was restarting, so don't
     - I'll talk about why I made this in a bit
     - Additional config was needed, see [Reccomendation](#reccomendation) section
 
-### What I would've done differently (also, wtf is the `xbootldr` partition?)
+## What I would've done differently (also, wtf is the `xbootldr` partition?)
 
 I didn't know this at the time, but, my efi partition was too small to fit the kernel, initramfs, initramfs-fallback and the cpu microcode modules. This eventually lead to me not being able to boot after finishing the install, and I had to look for a solution.
 
@@ -89,7 +90,7 @@ so, I would've done this:
     - ouside of `parted` live session run: `e2label /dev/[your device and partition here] arch_root` (in my case, it was `e2label /dev/nvme0n1p3 arch_root`)
 
 
-#### Recommendation
+### How to make a `XBOOTLDR` partition
 
 If your `efi` partition is small, ~100MB and you need to install nvidia drivers, I would just plan on making this partition from the beginning.
 
@@ -105,7 +106,7 @@ Here are the steps on doing so:
 
 Now go follow the guide until you get to mounting your partitions (You'll run `mkfs.fat` for the `XBOOTLDR` partition during the `mkfs` part, in addition to setting up the `root` partition fs)
 
-#### Recommendation (mounting partitions)
+### Where to mount your partitions when using an `XBOOTLDR` partition
 
 Welcome back
 
@@ -132,7 +133,7 @@ You would mount your partitions in this manner
 
 Continue with the installation guide, and come back here when you get to the bootloader section. (note, I do have some tips on what to install with `pacstrap` below as well, so check those out before you come back too)
 
-#### Recommendation (bootloader setup)
+### Bootloader setup using `XBOOTLDR`
 
 Welcome back.
 
@@ -182,7 +183,7 @@ And that about wraps it up for configuring your boot loader, as well as configur
 
 ------
 
-# `pacstrap` + setting up wifi, dhcp, and dns
+# `pacstrap` installation suggestions
 
 Your initial install of `arch` is extremely bare bones. I rebooted into the install and found out that I had no way of connecting to the internet, and was missing a few necessary packages
 
@@ -203,9 +204,9 @@ The following are only for graphics (I would read the graphics driver section ju
 - `nvidia`
 - `lib32-nvidia-utils` - may need to enable multilib repository in `/etc/pacman.conf`
 
-## Setting up wifi
+# Setting up wifi
 
-### Reference Guides
+## Reference Guides
 
 Arch has an extremely good wiki, so if in doubt, here are the different articles that I used when setting this up:
 
@@ -213,7 +214,7 @@ Arch has an extremely good wiki, so if in doubt, here are the different articles
 - [systemd-resolved](https://wiki.archlinux.org/title/Systemd-resolved) - `dns` setup
 
 
-### What we're setting up
+## What we're setting up
 Make sure you're `arch-chroot`ed into your new install environment
 
 So, there are a few different ways of doing wifi (this is linux after all), but I went with `iwd` seeing as that's what the install disk had installed.
@@ -223,7 +224,7 @@ We will configure `iwd` to use its own `dhcp` client (without this, you can conn
 We will also configure `dns` avia `systemd-resolved` (not sure if this is the best way, but its how I did it, and it works, you can use [`resoleconf`](https://wiki.archlinux.org/title/Openresolv) if you want, but this guide won't help much)
 
 
-### setting up `iwd` and `dhcp`
+## setting up `iwd` and `dhcp`
 
 - Last warning, be `arch-chroot`ed into your new install (or be booted into it, either way)
 - Make sure iwd is installed (`pacman -S iwd` or you may have installed this with `pacstrap`)
@@ -240,7 +241,7 @@ NameResolvingService=systemd
 
 That should get the wifi/dhcp side of things set up, now to configure `dns`
 
-### setting up `systemd-resolved` and `dns`
+## setting up `systemd-resolved` and `dns`
 
 - installation- there is none, it's pre-installed with `systemd`
 - enable `dns` daemon - `systemctl enable systemd-resolved.service`
@@ -263,7 +264,7 @@ FallbackDNS=1.1.1.1#cloudflare-dns.com 9.9.9.9#dns.quad9.net 8.8.8.8#dns.google 
 
 All done. When you reboot into your install, you should now be able to set up a wifi connection.
 
-### connecting to wifi (after booting into install)
+## connecting to wifi after rebooting into your arch installation (`iwctl`)
 
 Here are the steps to connect to wifi again just in case (they are almost the same as what you would've needed to do while installing `arch`)
 
@@ -280,7 +281,7 @@ Here are the steps to connect to wifi again just in case (they are almost the sa
 [iwd]# known-networks [network name] set-property AutoConnect yes
 ```
 
-### Notes
+## Notes
 
 I found that, for some reason, my wifi device wouldn't show up if I rebooted the computer using `reboot`. Instead, I had to use `shutdown now` and power the computer back up
 
