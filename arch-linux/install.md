@@ -7,6 +7,33 @@ My experience comes from installing arch on a laptop (TongFang something or othe
 Last qualifier: These instructions could be very out of date.
 
 ------
+# Forward
+# Partitioning the boot disk
+## EFI Partition
+## Usefule `parted` commands
+## Partitions and their sizes
+## What I would've done differently (also, wtf is the `xbootldr` partition?)
+### How to make a `XBOOTLDR` partition
+### Where to mount your partitions when using an `XBOOTLDR` partition
+### Bootloader setup using `XBOOTLDR`
+# `pacstrap` installation suggestions
+# Setting up wifi
+## Reference Guides
+## What we're setting up
+## setting up `iwd` and `dhcp`
+## setting up `systemd-resolved` and `dns`
+## connecting to wifi after rebooting into your arch installation (`iwctl`)
+## Notes
+# Graphics drivers (nvidia only)
+## Referenced guides
+## Installing the drivers
+## Enabling DRM (Direct Render Mode)
+### Adding kernel flag
+### Early loading DRM modules
+## Things that still haven't been configured
+# Desktop environment
+## Referenced guides
+## xOrg install and configuration
 
 
 # Partitioning the boot disk
@@ -415,7 +442,7 @@ Note: Not gonna cover multimonitor
 - [xorg](https://wiki.archlinux.org/title/Xorg)
 - [Nvidia](https://wiki.archlinux.org/title/NVIDIA) - Has a section on configuring xorg settings
 
-## The guide
+## xOrg install and configuration
 
 run `pacman -S xorg-server xorg-apps`
 
